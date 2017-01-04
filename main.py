@@ -58,27 +58,33 @@ def main():
 		print(current_player)
 		
 		while True:
-			
+		
 			grids = [grid(), grid(), grid()]
 			grids[current_player].display()
 			while grids[0].gameOver() == -1:
-				if current_player == J1 or J2:
-					shot = -1
+				shot = -1
+				if current_player == J1:
 					while shot <0 or shot >=NB_CELLS:
 						shot = int(input ("Quelle case allez-vous jouer ?"))
 					if (grids[0].cells[shot] != EMPTY):
 						grids[current_player].cells[shot] = grids[0].cells[shot]
+						grids[current_player].display()
 					else:
 						grids[current_player].cells[shot] = current_player
 						grids[0].play(current_player, shot)
-						current_player = current_player%2+1
-					
-					s.send(bytes(shot))
-					grids[current_player].display()
+						shot +=1
+						s.send(bytes(shot))
+						grids[current_player].display()
+						print(current_player)
 				else:
 					shot = s.recv(1500)
-					
-					
+					shotint = len(shot)-1
+					grids[0].play(current_player, shotint)
+					if current_player == 0: #pour le mode spectateur
+						grids[0].display()
+					else:
+						grids[J1].display()
+					print(current_player)
 
 			print("Game over")
 			grids[0].display()
