@@ -12,13 +12,14 @@ PORT = 7777
 
 def main():
 	
+	score = [0]
 	if len(sys.argv) == 1:
 
 		s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
 		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		s.bind((HOST, PORT))
 		s.listen(1)
-		liste=[]		#liste contient tous les clients, même le serveur (je crois)
+		liste=[]		#liste contient tous les clients
 		while True: 
 			socketList,_,_ = select.select(liste+[s], [], []) 	#contient la liste des sockets en lecture
 			for n in socketList: 							#on parcourt la liste des sockets 
@@ -26,11 +27,11 @@ def main():
 					connex, _ = s.accept() #on créé une nouvelle connexion entre le client et le serveur
 					liste.append(connex) #que l'on ajoute à la liste des clients
 					if len(liste) == 1:
-						connex.send("1er joueur".encode())
+						connex.send("1".encode())
 					if len(liste) == 2:
-						connex.send("2ème joueur".encode())
+						connex.send("2".encode())
 					if len(liste) > 2:
-						connex.send("Spectateur".encode())
+						connex.send("Spectator".encode())
 				else:			
 					data = n.recv(1500)
 					if(data==0): 
@@ -46,27 +47,31 @@ def main():
 
 	elif len(sys.argv) == 2:
 	
-		s = socket.socket(family = socket.AF_INET6, type = socket.SOCK_STREAM, proto = 0, fileno = None) #création de la socket
+		s = socket.socket(family = socket.AF_INET6, type = socket.SOCK_STREAM, proto = 0, fileno = None)
 		s.connect((HOST, 7777))
 		string_player = s.recv(1500).decode()
-		if string_player == "1er joueur":
+		if string_player == "1":
 			current_player = J1
-		elif string_player == "2ème joueur":
+		elif string_player == "2":
 			current_player = J2
-		elif string_player == "Spectateur":
-			current_player = 0
-		print(current_player)
+		elif string_player == "Spectator":
+			current_player = 3
+		if current_player == 1 or current_player == 2:
+			print("You are the player " + str(current_player))
+		else:
+			print("You are a spectator")
 		
 		while True:
-		
 			grids = [grid(), grid(), grid()]
-			grids[current_player].display()
+			grids[J1].display()
 			while grids[0].gameOver() == -1:
 				shot = -1
 				if current_player == J1:
 					while True:
-						shot = int(input ("In which position do you want to play?"))
-						if shot >=0 and shot <NB_CELLS:
+						tmp = input ("In which position do you want to play? ")
+						if ord(tmp) >= 48 and ord(tmp) <= 56: #conversion en ascii
+							shot = ord(tmp)-48
+						if shot >= 0 and shot < NB_CELLS:
 							break
 						else:
 							print("You should choose between 0 and 8.")
@@ -87,19 +92,18 @@ def main():
 					if current_player == 0: #pour le mode spectateur
 						grids[0].display()
 					else:
-						#~ grids[J1].display()
-						current_player = current_player%2+1
-				#~ print(current_player)		
-
+						current_player = current_player%2+1		
 
 			print("Game over")
 			grids[0].display()
 			if grids[0].gameOver() == J1:
 				print("You win !")
+				score[0] += 1
 			else:
 				print("You lose !")
+			print("Score : " + str(score[0]))
 				
-			"""------- permet au joueur de rejouer tant qu'il veut-------"""
+			"""-------Allows the player to play again-------"""
 			answer = ''
 			while answer != 'y' or answer != 'n': 
 				answer = input("Do you want to continue? y/n ")
@@ -109,8 +113,8 @@ def main():
 			if answer == 'n':
 				break
 			"""----------------------------------------------------------"""
-		#fin du while(True)
-	#fin du client
+		#end of while(True)
+	#end of client
 							
 main()
 
