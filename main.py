@@ -12,7 +12,7 @@ PORT = 7777
 
 def main():
 	
-	score = [0]
+	score = 0
 	if len(sys.argv) == 1:
 
 		s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
@@ -41,9 +41,7 @@ def main():
 					for i in liste:
 						if (i!=n): 	#si la socket est différente de celle qui nous a envoyé un message
 							i.send(data) #on envoie à toutes les autres socket le message envoyé par s
-
-
-
+	#End of server
 
 	elif len(sys.argv) == 2:
 	
@@ -55,7 +53,7 @@ def main():
 		elif string_player == "2":
 			current_player = J2
 		elif string_player == "Spectator":
-			current_player = 3
+			current_player = 0
 		if current_player == 1 or current_player == 2:
 			print("You are the player " + str(current_player))
 		else:
@@ -66,42 +64,42 @@ def main():
 			grids[J1].display()
 			while grids[0].gameOver() == -1:
 				shot = -1
-				if current_player == J1:
-					while True:
-						tmp = input ("In which position do you want to play? ")
-						if ord(tmp) >= 48 and ord(tmp) <= 56: #conversion en ascii
-							shot = ord(tmp)-48
-						if shot >= 0 and shot < NB_CELLS:
-							break
+					if current_player == J1:
+						while True:
+							tmp = input ("In which position do you want to play? ")
+							if ord(tmp) >= 48 and ord(tmp) <= 56: #conversion en ascii
+								shot = ord(tmp)-48
+							if shot >= 0 and shot < NB_CELLS:
+								break
+							else:
+								print("You should choose between 0 and 8.")
+						if (grids[0].cells[shot] != EMPTY):
+							grids[J1].cells[shot] = grids[0].cells[shot]
+							grids[J1].display()
 						else:
-							print("You should choose between 0 and 8.")
-					if (grids[0].cells[shot] != EMPTY):
-						grids[current_player].cells[shot] = grids[0].cells[shot]
-						grids[current_player].display()
+							grids[J1].cells[shot] = current_player
+							grids[0].play(J1, shot)
+							grids[J1].display()
+							shot_to_send = bytes(str(shot),"ascii")
+							s.send(shot_to_send)
+							current_player = current_player%2+1
+							
 					else:
-						grids[current_player].cells[shot] = current_player
+						shot = int(s.recv(1500))
 						grids[0].play(current_player, shot)
-						grids[current_player].display()
-						shot_to_send = bytes(str(shot),"ascii")
-						s.send(shot_to_send)
-						current_player = current_player%2+1
-						
-				else:
-					shot = int(s.recv(1500))
-					grids[0].play(current_player, shot)
-					if current_player == 0: #pour le mode spectateur
-						grids[0].display()
-					else:
-						current_player = current_player%2+1		
+						if current_player == 0: #pour le mode spectateur
+							grids[0].display()
+						else:
+							current_player = current_player%2+1		
 
 			print("Game over")
 			grids[0].display()
 			if grids[0].gameOver() == J1:
 				print("You win !")
-				score[0] += 1
+				score += 1
 			else:
 				print("You lose !")
-			print("Score : " + str(score[0]))
+			print("Score : " + str(score))
 				
 			"""-------Allows the player to play again-------"""
 			answer = ''
@@ -112,9 +110,9 @@ def main():
 					break
 			if answer == 'n':
 				break
-			"""----------------------------------------------------------"""
+			"""---------------------------------------------"""
 		#end of while(True)
-	#end of client
+	#End of server
 							
 main()
 
