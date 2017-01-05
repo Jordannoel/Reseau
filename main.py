@@ -64,27 +64,33 @@ def main():
 			while grids[0].gameOver() == -1:
 				shot = -1
 				if current_player == J1:
-					while shot <0 or shot >=NB_CELLS:
-						shot = int(input ("Quelle case allez-vous jouer ?"))
+					while True:
+						shot = int(input ("In which position do you want to play?"))
+						if shot >=0 and shot <NB_CELLS:
+							break
+						else:
+							print("You should choose between 0 and 8.")
 					if (grids[0].cells[shot] != EMPTY):
 						grids[current_player].cells[shot] = grids[0].cells[shot]
 						grids[current_player].display()
 					else:
 						grids[current_player].cells[shot] = current_player
 						grids[0].play(current_player, shot)
-						shot +=1
-						s.send(bytes(shot))
 						grids[current_player].display()
-						print(current_player)
+						shot_to_send = bytes(str(shot),"ascii")
+						s.send(shot_to_send)
+						current_player = current_player%2+1
+						
 				else:
-					shot = s.recv(1500)
-					shotint = len(shot)-1
-					grids[0].play(current_player, shotint)
+					shot = int(s.recv(1500))
+					grids[0].play(current_player, shot)
 					if current_player == 0: #pour le mode spectateur
 						grids[0].display()
 					else:
-						grids[J1].display()
-					print(current_player)
+						#~ grids[J1].display()
+						current_player = current_player%2+1
+				#~ print(current_player)		
+
 
 			print("Game over")
 			grids[0].display()
@@ -95,10 +101,10 @@ def main():
 				
 			"""------- permet au joueur de rejouer tant qu'il veut-------"""
 			answer = ''
-			while True: 
+			while answer != 'y' or answer != 'n': 
 				answer = input("Do you want to continue? y/n ")
 				print(answer)
-				if answer != 'y' or answer != 'n':
+				if answer == 'y' or answer == 'n':
 					break
 			if answer == 'n':
 				break
