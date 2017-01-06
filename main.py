@@ -64,33 +64,33 @@ def main():
 			grids[J1].display()
 			while grids[0].gameOver() == -1:
 				shot = -1
-					if current_player == J1:
-						while True:
-							tmp = input ("In which position do you want to play? ")
-							if ord(tmp) >= 48 and ord(tmp) <= 56: #conversion en ascii
-								shot = ord(tmp)-48
-							if shot >= 0 and shot < NB_CELLS:
-								break
-							else:
-								print("You should choose between 0 and 8.")
-						if (grids[0].cells[shot] != EMPTY):
-							grids[J1].cells[shot] = grids[0].cells[shot]
-							grids[J1].display()
+				if current_player == J1:
+					while True:
+						tmp = input ("In which position do you want to play? ")
+						if ord(tmp) >= 48 and ord(tmp) <= 56: #conversion en ascii
+							shot = ord(tmp)-48
+						if shot >= 0 and shot < NB_CELLS:
+							break
 						else:
-							grids[J1].cells[shot] = current_player
-							grids[0].play(J1, shot)
-							grids[J1].display()
-							shot_to_send = bytes(str(shot),"ascii")
-							s.send(shot_to_send)
-							current_player = current_player%2+1
-							
+							print("You should choose between 0 and 8.")
+					if (grids[0].cells[shot] != EMPTY):
+						grids[J1].cells[shot] = grids[0].cells[shot]
+						grids[J1].display()
 					else:
-						shot = int(s.recv(1500))
-						grids[0].play(current_player, shot)
-						if current_player == 0: #pour le mode spectateur
-							grids[0].display()
-						else:
-							current_player = current_player%2+1		
+						grids[J1].cells[shot] = current_player
+						grids[0].play(J1, shot)
+						grids[J1].display()
+						shot_to_send = bytes(str(shot),"ascii")
+						s.send(shot_to_send)
+						current_player = current_player%2+1
+						
+				else:
+					shot = int(s.recv(1500))
+					grids[0].play(current_player, shot)
+					if current_player == 0: #pour le mode spectateur
+						grids[0].display()
+					else:
+						current_player = current_player%2+1		
 
 			print("Game over")
 			grids[0].display()
@@ -115,9 +115,3 @@ def main():
 	#End of server
 							
 main()
-
-
-#else:
-				#	shot = random.randint(0,8)
-				#	while grids[current_player].cells[shot] != EMPTY:
-				#		shot = random.randint(0,8)
